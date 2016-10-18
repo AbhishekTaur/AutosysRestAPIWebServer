@@ -1,0 +1,18 @@
+{
+  "name": "AutosysRestAPIWebServer",
+  "version": "1.0.0",
+  "description": "Autosys Rest API Web Server",
+  "main": "Server.js",
+  "dependencies": {
+    "express": "latest",
+    "body-parser": "latest",
+    "mssql": "latest"
+  },
+  "config": {
+    "user": "autosys",
+    "password": "Wikipedia7",
+    "server": "tauab01-e7450",
+    "database": "AEDB"
+  },
+  "port": "9090"
+}

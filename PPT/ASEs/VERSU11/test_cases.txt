@@ -1,0 +1,11 @@
+{
+    "resource_name":"",
+    "res_type":"",
+	"machine":"",
+    "amount":"", 
+   "description":""
+}
+
+URLs:
+ api1 : http://localhost:8081/Calendar/Cycle/ListAllCycles
+ api2 : http://localhost:8081/Resource/UpdateResource

@@ -1,0 +1,382 @@
+APIs:
+CreateCalendar (priya) - Done
+Steps:
+1. Return error if calendar already exists
+2. For each date, Inserts a row into ujo_calendar 
+3. Insert a row into ujo_calendar_desc
+4. return success 
+
+AddDatesToCalendar (Shipra) - Done
+Steps:
+1. Return error if calendar does not exist
+2. Return error if any date already exists
+3. For each date, Inserts a row into ujo_calendar 
+4. return success 
+
+DeleteDatesFromCalendar (Srinija) - Done
+Steps:
+1. Return error if calendar does not exist
+2. Return error if any date does not exist
+3. For each date, delete a row from ujo_calendar for this calendar
+4. If all dates are deleted for this calendar, then delete calendar row from ujo_calendar_desc
+5. return success 
+
+DeleteCalendar (Sandhya) - Done
+Steps:
+1. Return error if calendar does not exist
+2. Delete all rows from ujo_calendar for this calendar
+3. Delete row from ujo_calendar_desc
+4. return success 
+
+ListDatesForCalendar (Prerna)  - Done
+Steps:
+1. Return error if calendar does not exist
+2. Get description from ujo_calendar_desc
+3. Get all dates from ujo_calendar for this calendar
+4. return information 
+
+ListAllStandardCalendars (Sushmita) - Done
+Steps:
+1. Get name and description from ujo_calendar by joining with ujo_calendar_desc on name, cal_type = 1, cal_id = 0 sorted by name
+2. return information
+
+ModifyStandardCalendarDescription (Abhishek) - Done
+Steps:
+1. Return error if calendar does not exist
+2. update description in ujo_calendar_desc for this calendar using name and cal_type
+3. return success
+
+CreateCycle (Ashish)  - Done
+Steps:
+1. Return error if cycle already exists
+2. For each period, Inserts a row into ujo_cycle. 
+Note: Each period length must be between 1 to 366 inclusive. Periods should not overlap.
+3. Insert a row into ujo_calendar_desc
+4. return success 
+
+AddPeriodsToCycle (Anirban) - Done
+Steps:
+1. Return error if cycle does not exist
+2. Get the existing periods for this cycle into a list 
+3. If one of the input periods exist in list obtained in above step, return period already exist
+4. Append input periods to the existing list obtained in above step
+5. Delete the exist periods from ujo_cycle. 
+6. For each period in the list prepared above, Inserts a row into ujo_cycle. 
+4. return success
+
+
+DeletePeriodsFromCycle (Gagan) - Done
+Cycle name, list of periods
+Steps:
+1. Return error if cycle does not exist
+2. Get the existing periods for this cycle into a list 
+3. If one of the input periods does not exist in list obtained in above step, return period does not exist
+4. Delete the exist periods from ujo_cycle and delete the input periods from the list obtained in step 2. 
+5. if the list is empty, delete the calendar from ujo_calendar_desc.
+6. otherwise, For each period in the list above, Inserts a row into ujo_cycle. 
+7. return success
+
+
+DeleteCycle (Himanshu) - Done
+Steps:
+1. Return error if cycle does not exist
+2. Delete all rows from ujo_cycle for this cycle
+3. Delete row from ujo_calendar_desc
+4. return success 
+
+ListDatesForCycle (Dilip) - Done
+Steps:
+1. Return error if Cycle does not exist
+2. Get description from ujo_calendar_desc
+3. Get all periods from ujo_cycle for this cycle
+4. return information 
+
+ListAllCycles ( Sudhir) - Done
+Steps:
+1. Get name and description from ujo_cycle by joining with ujo_calendar_desc on name and cal_type = 3 sorted by name
+2. return information
+
+ModifyCycleDescription (Mritunjay) - Done
+Steps:
+1. Return error if cycle does not exist
+2. update description in ujo_calendar_desc for this cycle using name and cal_type
+3. return success
+
+Tables involved:
+
+ujo_calendar_desc
+cal_type : calendar type
+Standard - 1
+Cycle - 3
+cal_name : calendar name
+description : calendar description
+
+ujo_calendar
+cal_id : calendar  id
+Standard - 0
+day  : timestamp
+name : calendar name
+
+ujo_cycle
+cycname : cycle name
+cycperiod : cycle period sequence
+cycperst : cycle period start
+cycperen : cycle period end
+
+InsertResource (Mritunjay)
+input: 
+Required: resource_name, amount, res_type
+Optional: machine (default : ' '), description (default : ' ')
+Steps:
+1. Get roid using stored procedure ujo_get_id (0, 'roid')
+2. userid = '', schedulerHostname = ''
+3. Call stored procedure ujo_put_virt_resource(1 - insert, roid, resource_name, machine, amount, 
+                                               description, sign (0 for no sign or 1 for + sign), 
+                                               res_type, userid, schedulerHostname)
+4. Get the return value from stored procedure and send appropriate message as part of response
+
+UpdateResource(Sudhir)
+input: 
+Required: resource_name
+Optional: machine , description , amount ( can be + or -) 
+Steps:
+1. Get resource information such as res_type,machine,description from ujo_virt_resource_lookup joining with ujo_virt_resource using resource_name and machine (if specified)
+2. Return error if resource not exist 
+3. userid = '', schedulerHostname = ''
+4. Call stored procedure ujo_put_virt_resource(2 - update, 0, resource_name, machine, amount,
+                                               description, sign (0 for no sign and 1 for + sign  and 2 for - sign),
+                                               res_type, userid, schedulerHostname)
+5. Get the return value from stored procedure and send appropriate message as part of response
+
+DeleteResource(Dilip)
+input: 
+Required: resource_name
+Optional: machine
+Steps:
+1. Get resource information such as res_type,machine from ujo_virt_resource_lookup joining with ujo_virt_resource using resource_name and machine (if specified)
+2. Return error if resource not exist 
+3. userid = '', schedulerHostname = ''
+4. Call stored procedure ujo_put_virt_resource(3 - delete, 0, resource_name, machine, 0, 
+                                               '', 0, 
+                                               res_type, userid, schedulerHostname)
+5. Get the return value from stored procedure and send appropriate message as part of response
+
+GetResource(Himanshu)
+input: 
+Required: resource_name (can contain * or % or ?)
+Optional: 
+machine(can contain * or % or ?),
+Steps:
+1. Get resource information by joining ujo_virt_resource_lookup, ujo_virt_resource using resource_name and machine (if specified)
+2. Return error if resource not exist 
+3. return information "Resource Name", "Defined", "Type", "Machine" 
+
+Tables involved:
+ujo_virt_resource
+roid  : resource ID
+create_stamp : resource creation timestamp
+create_user  : User who created resource 
+modify_stamp : resource modified timestamp
+modify_user  : User who modified resource 
+amount_defined  : number of units to assign to a virtual resource
+description     : description for a virtual resource
+mach_name       : 
+the machine name that a virtual resource is associated with. A resource defined for a specific machine
+is only available to jobs submitted to that machine. If you omit the machine attribute from a new virtual
+resource definition, the resource is added as a global resource that is available to all machines.
+type : D (0) | R (1) | T (2)
+D - Defines a depletable resource. A depletable resource is a consumed resource. When a job that uses this resource is submitted, the used resource units are permanently removed from the available resource pool. If you want to use the depletable resource again in a job, you must use the update_resource subcommand to replenish the resource units back to the resource pool.
+R - Defines a renewable resource. A renewable resource is a borrowed resource. When a job that uses this resource is submitted, the used resource units are temporarily removed from the available resource pool. When the job completes, the resource units are returned to the pool, or the units are held until they are manually released back to the pool. You specify whether the units are returned or not when you define the resource dependency in a job.
+T - Defines a threshold resource. A threshold resource is a sizing resource. Only the jobs that require the specified resource amount or fewer are submitted to run. For example, if the threshold resource is set to 2, CA Workload Automation AE submits the jobs that require 2 or fewer units. The used resource units are not removed from the resource pool.
+
+ujo_virt_resource_lookup
+resource_name : resource name
+roid : resource ID
+global_ind : global indicator, 1- global resource, 0 - machine resource
+
+
+InsertExternalInstance(Gagan)
+Input: 
+Required: external_instance, xtype, xmachine
+Additional Required input for external CA Workload Automation AE instance :  xport
+Additional Required input for external CA Workload Automation EE instance :  xmanager, xport
+Optional input for external CA Workload Automation AE or EE instance : xcrypt_type, xkey_to_manager
+Steps:
+Note: External Instance Name cannot be the same as the local instance
+1. Return error if external_instance already exists
+2. Prepare the properties with provided input and if provided, xcrypt_type to be converted to an integer
+3. Insert a row with prepared properties into ujo_asext_config
+4. return success
+
+UpdateExternalInstance(Anirban)
+Input: 
+Required: external_instance
+Optional: xmachine
+Additional Optional input for external CA Workload Automation AE instance :  xport, xcrypt_type, xkey_to_manager 
+Additional Optional input for external CA Workload Automation EE instance :  xmanager, xport, xcrypt_type, xkey_to_manager 
+Steps:
+1. Return error if external_instance does not exist
+2. Get the existing properties from ujo_asext_config using external_instance and update them with provided input and if provided, xcrypt_type to be converted to an integer
+3. Update the row in ujo_asext_config with updated properties (except asext_status) using external_instance
+4. return success
+
+DeleteExternalInstance(Ashish)
+Input: 
+Required: external_instance
+Steps:
+1. Return error if external_instance does not exist
+2. Delete the row from ujo_asext_config using external_instance
+3. Return success
+
+GetExternalInstance(Abhishek)
+Input: 
+Required: external_instance (can contain * or % or ?)
+Steps:
+1. Return error if external_instance does not exist
+2. Get the properties from ujo_asext_config using external_instance 
+3. Return Name, Type, Server, Port of external_instance
+
+Tables involved:
+
+ujo_asext_config
+asext_autoserv        : unique name of the external instance to add must be 3 characters
+asext_crypt_type      : encryption type to use (0 - NONE, 1 - DEFAULT, 2 - AES), applicable for  asext_instance_type = e or a, for others : 0
+                        If asext_instance_type is
+                        'a' : default : AES      (Applicable types: NONE, DEFAULT, AES)
+                        'e' : default : NONE     (Applicable types: NONE, AES)                   
+asext_instance_type   : type of external instance
+                         a : Identifies a remote CA Workload Automation AE application server instance.
+                         c : Identifies a CA AutoSys Workload Automation Connect Option instance.
+                         u : Identifies a CA Universal Job Management Agent or CA NSM instance.
+                         e : Identifies a CA Workload Automation EE instance.
+asext_key             : the encryption key used to encrypt data sent to the other instance. applicable for  asext_instance_type = e or a
+                        if asext_crypt_type = 0, then default: NULL
+asext_manager_name    : alias name of the CA Workload Automation EE manager, applicable for  asext_instance_type = e, for others: NULL                         
+asext_nod_name        : connection information for an external instance
+                        If asext_instance_type is 
+                        'a' : specify the application server machine name. To specify multiple application servers, separate each machine name with a comma.
+                        'c' or 'u' :  specify the machine name.
+                        'e' : specify the host name of CA Workload Automation EE.
+                        Limits: Up to 512 characters
+asext_port            : port number of the external instance, Limits: 1-65535, default: 0
+asext_status          : status of external instance, default: 'o'
+
+InsertRealMachine:(Sushmita)
+Input:
+Required: machine_name
+Optional: description (default: ''), factor (default: 1), max_load (default: 0), node_name (default: machine_name), type ( should not allow 'v' or 'p', default: 'a'), agent_name(default: WA_AGENT), character_code (default: ASCII), encryption_type (default: 1), key_to_agent (NULL, if encryption_type = 0), 
+opsys (default: 0), port (default: 7520)
+Steps:
+1. return error If machine_name exists 
+2. fill default values, opsys to be converted to corresponding integer, encryption_type to be converted to corresponding integer 
+3. call stored procedure ujo_put_machine(1 - insert, machine_name, '', ' ', agent_name, character_code, description, factor, 0, 0, 'o', max_load,  node_name, opsysInt, port, '', 0, machine_name, type);   
+4. if an alias(agent_name) does not exist, then insert a row in  ujo_agent_alias (agent_name, key_to_agent, encryption_typeInt) 
+5. return success
+
+UpdateRealMachine:(Prerna)
+Input:
+Required: machine_name
+Optional: description (default: ''), factor (default: 1), max_load (default: 0), node_name (default: machine_name),
+agent_name(default: WA_AGENT), character_code (default: ASCII), encryption_type (default: 1), key_to_agent (NULL, if encryption_type = 0), 
+opsys (default: 0), port (default: 7520)
+Steps:
+1. Get the machine details using stored procedure ujo_get_machine with machine_name
+2. Return error if machine does not exist
+3. fill with input, opsys to be converted to corresponding integer, encryption_type to be converted to corresponding integer 
+4. call stored procedure ujo_put_machine(0 - update, machine_name, '', '', agent_name, character_code, description, factor, 0, 0, 'o', max_load,  node_name, opsysInt, port, '', 0, machine_name, type);
+6. if key_to_agent, encryption_type is provided, then update key_to_agent, encryption_typeInt in  ujo_agent_alias for this agent_name
+7. return success
+
+InsertVirtualMachine:(Sandhya)
+Input:
+Required: machine_name, type (v or p), [machine[,factor (default : -1), max_load(default: 0)]]+,  
+Optional: description (default: '')
+Steps:
+1. return error If machine_name exists     
+2. call stored procedure ujo_put_machine(1 - insert, machine_name, '', '', '', '', description, 0, 0, 0, 'o', 0,  '', 0, 0, '', 0, machine_name, type);
+3. for each machine,
+   Get the machine details using stored procedure ujo_get_machine with machine_name
+   call stored procedure ujo_put_machine(1 - insert, machine, '', machine_name, '', '', '', factor, 0, 0, 'o', max_load,  '', 0, 0, '', 0, machine_name.machine, machine type);
+4. return success
+
+
+UpdateVirtualMachine:(Srinija)
+Input:
+Required: machine_name
+Optional: [machine[,factor (default : -1), max_load(default: 0)]]*,  description 
+Steps:
+1. Get the machine details such as description, type using stored procedure ujo_get_machine with machine_name
+2. Return error if machine does not exist
+3. call stored procedure ujo_put_machine(0 - update, machine_name, '', '', '', '', description, 0, 0, 0, 'o', 0,  '', 0, 0, '', 0, machine_name, type);
+5. for each machine,
+   Get the machine details using stored procedure ujo_get_machine with machine_name
+   if machine exist, 
+   call stored procedure ujo_put_machine(0 - update, machine, '', machine_name, '', '', '', factor, 0, 0, 'o', max_load,  '', 0, 0, '', 0, machine_name.machine, machine type);
+   else
+   call stored procedure ujo_put_machine(1 - insert, machine, '', machine_name, '', '', '', factor, 0, 0, 'o', max_load,  '', 0, 0, '', 0, machine_name.machine, machine type);
+6. return success
+
+DeleteMachine:(Shipra)
+Input: 
+Required: machine_name
+Optional: force (default: n), remove_references(default: n)
+Steps:
+1. Get the agent_name from ujo_machine using machine_name
+2. Return error if a machine_name does not exist
+3. if remove_references = y
+        Delete the machine_name from ujo_machine using mach_name= machine_name
+   else
+       Get number of rows from ujo_machine using mach_name= machine_name and parent_name <> ''.
+       If count > 0 i.e. If machine_name is referenced by virtual machine,
+           if force = n
+                return error referenced by virtual machine
+       Delete the machine_name from ujo_machine using mach_name= machine_name and parent_name = '' i.e deleting the real machine or virtual machine.
+
+4. delete the machine_name from ujo_machine using parent_name = machine_name i.e. deleting children of a virtual machine
+5. Get no of machines from ujo_machine where agent_name = agent_name got in step 1.
+   If the count = 0, then delete from ujo_agent_alias using alias = agent_name 
+   
+DeleteMachinesFromVirtualMachine:(Priya)
+Input:
+Required: machine_name, machine,[machine...]
+Steps:
+1.If  machine_name is not existing in ujo_machine, then return error.
+2.For each machine
+   a. if mach_name= machine and parent_name = machine_name not exist in ujo_machine, then return error machine not part of virtual machine
+   b. if (count of machines whose parent_name = machine_name) = 1 
+           then error machine is last machine in virtual machine
+   c. else 
+           delete the machine from ujo_machine using mach_name= machine and parent_name = machine_name
+
+   
+Tables involved:
+
+ujo_machine
+administrator      : Administrator id authorized to provision the agent default: ''
+agent_name         : name of the agent, default: WA_AGENT
+character_code     : character encoding type (ASCII, EBCDIC), default : ASCII
+description        : description of the machine
+factor             : weight factor of the machine (relative processing power) ranging from 0 to 1024, default: 1 
+heartbeat_attempts : number of attempts to send a heart beat, default: 0
+heartbeat_freq     : The number of seconds between heart beat polls, default: 0
+mach_name          : machine name 
+mach_status        : machine status such as online/offline default: o
+max_load           : maximum load that a machine can handle, default: 0
+node_name          : node name where the agent is running, default is mach_name
+opsys              : operating system running the agent, 1 - aix, 2 - hpux, 3 - linux, 4 - openvms, 5 - i5os, 6 - solaris, 7 - tandem, 8 - windows, 9 - zos, default: 0
+parent_name        : empty if machine is not part of container, otherwise container name
+port               : port number (1-65535) the agent is listening on, default : 7520
+prepjobid          : not used
+provision          : Flag to cause the agent to be provisioned automatically, default : 0 
+que_name           : queue name (parent_name.machine_name(if parent_name not empty) or mach_name)
+type               : Type of machine(a - automation agent | c - Connect Option machine | l - 4.5.1 real UNIX machine|
+                                     L - 4.5.1 real Windows machine| n -r11 real Windows machine or a virtual machine that consists only of r11 real Windows machines|
+                                     p - real machine pool managed by CA Automation Suite for Data Centers | r - r11 real UNIX machine | 
+                                     u - CA NSM or a CA Universal Job Management Agent (CA UJMA) machine | 
+                                     v - Specifies a virtual machine. The virtual machine can consist of CA Workload Automation Agent machines (type a), r11 real UNIX machines (type r), and r11 real Windows machines (type n). ),
+                    default: a
+
+ujo_agent_alias
+alias              : name of the agent, default: WA_AGENT
+crypt_key          : encryption key used to encrypt data from CA Workload Automation AE to the agent, NULL if encryption_type = 0
+encryption_type    : type of encryption between CA Workload Automation AE and the agent machine you are defining., 0 - NONE, 1 - DEFAULT, 2 - AES, default: 1
